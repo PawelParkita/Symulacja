@@ -10,8 +10,9 @@ public class Simulation {
     }
 
     void start_simulation(){
-        Map map = new Map(25, 25, 5, 5, 0);
+        Map map = new Map(25, 25, 5, 5,10,10, 50);
         map.map_initialization();
+        map.map_population();
         map.print_map();
     }
 
