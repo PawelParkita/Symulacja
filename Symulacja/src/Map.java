@@ -1,4 +1,3 @@
-import java.util.ArrayList;
 import java.util.*;
 import java.util.Random;
 
@@ -10,8 +9,9 @@ public class Map {
     int lakes;
     int probability;
     int alien_population;
-    int human_population;
-    HashMap <Agent,String> agents = new HashMap<>();
+    static int human_population;
+    HashMap <Integer,Agent> agents = new HashMap<>();
+    HashMap <Integer,Agent> agents_copy = new HashMap<>();
 
     Map(int width, int height, int mountains, int lakes,int alien_population,int human_population, int probability){
         this.width=width;
@@ -80,15 +80,18 @@ public class Map {
                 if(rand.nextInt(100)<probability) {
                     map[x][y] = "H";
                     Human human = new Human(x, y, random.random_sex());
-                    agents.put(human, "H");
+                    int z=(y*height)+x;
+                    agents.put(z,human);
+
                 }
                 else{
                     map[x][y] = "G";
                     Guardian guard = new Guardian(x,y,random.random_sex(),random.random_power());
-                    agents.put(guard, "G");
+                    int z=(y*height)+x;
+                    agents.put(z, guard);
+
                 }
                 humans--;
-
             }
         }
 
@@ -102,132 +105,148 @@ public class Map {
            if(map[x][y]==".") {
                map[x][y]="A";
                Alien alien = new Alien(x,y,random.random_power(),random.random_speed());
-               agents.put(alien,"A");
+               int z=(y*height)+x;
+               agents.put(z,alien);
                aliens--;
            }
        }
-
+//       Set< Integer > agent = agents.keySet();
+//       for (Integer object:agent)
+//       {
+//           System.out.println(object);
+//       }
     }
 
     void movement(){
-        Set<Agent> agent=agents.keySet();
-        for(Agent object:agent) {
+        agents_copy.clear(); // copy map list
+        Set<Integer> agent=agents.keySet();
+        for (Integer object:agent)
+        {
+            agents_copy.put(object,agents.get(object));
+        }
+
+
+        for (int i=0;i<width;i++) {
             /*
             0 1 2
             3   4
             5 6 7
              */
-            Random rand = new Random();
-            int next = rand.nextInt(8);
+            for (int j=0;j<height;j++) {
 
-            if(next==0){
-                int next_x=object.x-object.speed;
-                int next_y=object.y-object.speed;
+                int z = (i * height) + j;
 
-                if(does_exist(next_x, next_y)){
-                    if(map[next_x][next_y]=="."){
-                        map[object.x][object.y]=".";
-                        map[next_x][next_y]=agents.get(object);
-                        object.x=next_x;
-                        object.y=next_y;
+                if (agents_copy.containsKey(z)) {
+                //    System.out.println("tak " + z);
+                    int next_x, next_y;
+                    do {
+                        int next[] = agents.get(z).mov();
+                        next_x = next[0];
+                        next_y = next[1];
+                    } while (!does_exist(next_x, next_y));
+                    //System.out.println(next_y * height + next_x);
+
+
+                    if (map[next_x][next_y] == ".") { // if cell is empty
+                        agents.put((next_y * height + next_x), agents.get(z));
+                        agents.remove(z);
+                        agents.remove(z,agents.get(z));
+
+                        map[next_x][next_y] = map[j][i];
+                        map[j][i] = ".";
                     }
-                }
-            }
 
-            if(next==1){
-                int next_x=object.x;
-                int next_y=object.y-object.speed;
 
-                if(does_exist(next_x, next_y)){
-                    if(map[next_x][next_y]=="."){
-                        map[object.x][object.y]=".";
-                        map[next_x][next_y]=agents.get(object);
-                        object.x=next_x;
-                        object.y=next_y;
+
+                   else if (agents.get(z).sex == 'A') { // if alien exist
+
+                        if ((agents.get(next_y * height + next_x).sex == 'W') || (agents.get(next_y * height + next_x).sex == 'M')) { // when alien --> human
+                            if (agents.get(next_y * height + next_x).power < agents.get(z).power) { //alien win
+                                agents.put(next_y * height + next_x, agents.get(z));
+                                agents.remove(z);
+                                agents.remove(z, agents.get(z));
+                                human_population--;
+                                map[next_x][next_y] = map[j][i];
+                                map[j][i] = ".";
+                            } else if (agents.get(next_y * height + next_x).power > agents.get(z).power) //human win
+                            {
+                                agents.remove(z);
+                                agents.remove(z, agents.get(z));
+                                alien_population--;
+                                map[j][i] = ".";
+                            } else { // alien power = human power
+                                if (alien_population > human_population) {
+                                    agents.put(next_y * height + next_x, agents.get(z));
+                                    agents.remove(z);
+                                    agents.remove(z, agents.get(z));
+                                    human_population--;
+                                    map[next_x][next_y] = map[j][i];
+                                    map[j][i] = ".";
+                                } else {
+                                    agents.remove(z);
+                                    agents.remove(z, agents.get(z));
+                                    alien_population--;
+                                    map[j][i] = ".";
+                                }
+                            }
+                        }
                     }
-                }
-            }
+                    else if ((agents.get(z).sex == 'W') || (agents.get(z).sex == 'M')) { // if human exist
+                        if (((agents.get(next_y * height + next_x).sex == 'W') && (agents.get(z).sex == 'M')) || ((agents.get(z).sex == 'M' && (agents.get(next_y * height + next_x).sex == 'W')))) { // humans other sex
+                            Random rand = new Random();
+                            Randomizer random = new Randomizer();
+                            if (rand.nextInt(100) < 50) {
 
-            if(next==2){
-                int next_x=object.x+object.speed;
-                int next_y=object.y-object.speed;
+                                int x, y;
 
-                if(does_exist(next_x, next_y)){
-                    if(map[next_x][next_y]=="."){
-                        map[object.x][object.y]=".";
-                        map[next_x][next_y]=agents.get(object);
-                        object.x=next_x;
-                        object.y=next_y;
-                    }
-                }
-            }
+                                do {
+                                    x = rand.nextInt(width);
+                                    y = rand.nextInt(height);
+                                } while (map[x][y] == ".");
 
-            if(next==3){
-                int next_x=object.x-object.speed;
-                int next_y=object.y;
+                                if (rand.nextInt(100) < probability) {
+                                    map[x][y] = "H";
+                                    Human human = new Human(x, y, random.random_sex());
+                                    int p = (y * height) + x;
+                                    agents.put(p, human);
 
-                if(does_exist(next_x, next_y)){
-                    if(map[next_x][next_y]=="."){
-                        map[object.x][object.y]=".";
-                        map[next_x][next_y]=agents.get(object);
-                        object.x=next_x;
-                        object.y=next_y;
-                    }
-                }
-            }
+                                } else {
+                                    map[x][y] = "G";
+                                    Guardian guard = new Guardian(x, y, random.random_sex(), random.random_power());
+                                    int p = (y * height) + x;
+                                    agents.put(p, guard);
 
-            if(next==4){
-                int next_x=object.x+object.speed;
-                int next_y=object.y;
-
-                if(does_exist(next_x, next_y)){
-                    if(map[next_x][next_y]=="."){
-                        map[object.x][object.y]=".";
-                        map[next_x][next_y]=agents.get(object);
-                        object.x=next_x;
-                        object.y=next_y;
-                    }
-                }
-            }
-
-            if(next==5){
-                int next_x=object.x-object.speed;
-                int next_y=object.y+object.speed;
-
-                if(does_exist(next_x, next_y)){
-                    if(map[next_x][next_y]=="."){
-                        map[object.x][object.y]=".";
-                        map[next_x][next_y]=agents.get(object);
-                        object.x=next_x;
-                        object.y=next_y;
-                    }
-                }
-            }
-
-            if(next==6){
-                int next_x=object.x;
-                int next_y=object.y+object.speed;
-
-                if(does_exist(next_x, next_y)){
-                    if(map[next_x][next_y]=="."){
-                        map[object.x][object.y]=".";
-                        map[next_x][next_y]=agents.get(object);
-                        object.x=next_x;
-                        object.y=next_y;
-                    }
-                }
-            }
-
-            if(next==7){
-                int next_x=object.x+object.speed;
-                int next_y=object.y+object.speed;
-
-                if(does_exist(next_x, next_y)){
-                    if(map[next_x][next_y]=="."){
-                        map[object.x][object.y]=".";
-                        map[next_x][next_y]=agents.get(object);
-                        object.x=next_x;
-                        object.y=next_y;
+                                }
+                            } else if (agents.get(next_y * height + next_x).sex == 'A') { // human -> alien
+                                if (agents.get(next_y * height + next_x).power < agents.get(z).power) {
+                                    agents.put(next_y * height + next_x, agents.get(z));
+                                    agents.remove(z);
+                                    agents.remove(z, agents.get(z));
+                                    alien_population--;
+                                    map[next_x][next_y] = map[j][i];
+                                    map[j][i] = ".";
+                                } else if (agents.get(next_y * height + next_x).power > agents.get(z).power) {
+                                    agents.remove(z);
+                                    agents.remove(z, agents.get(z));
+                                    human_population--;
+                                    map[j][i] = ".";
+                                } else {
+                                    if (alien_population > human_population) {
+                                        agents.remove(z);
+                                        agents.remove(z, agents.get(z));
+                                        human_population--;
+                                        map[j][i] = ".";
+                                    } else {
+                                        agents.put(next_y * height + next_x, agents.get(z));
+                                        agents.remove(z);
+                                        agents.remove(z, agents.get(z));
+                                        alien_population--;
+                                        map[next_x][next_y] = map[j][i];
+                                        map[j][i] = ".";
+                                    }
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -241,24 +260,10 @@ public class Map {
     }
 
     void print_map(){
-        //statistics
-        int guardians=0;
-        int aliens=0;;
-        int humans=0;
-
-        Set<Agent> agent=agents.keySet();
-        for(Agent object:agent) {
-            if(agents.get(object)=="A") aliens++;
-            if(agents.get(object)=="H") humans++;
-            if(agents.get(object)=="G") guardians++;
-
-        }
-
-        //printing
-        System.out.println("H: "+humans);
-        System.out.println("G: "+guardians);
-        System.out.println("A: "+aliens);
-
+        //statistics printing
+        System.out.println("H: "+human_population);
+        System.out.println("A: "+alien_population);
+        // Map printing
         for(int i=0; i<height; i++) {
             for (int j = 0; j < width; j++) {
                 System.out.print(map[j][i]+" ");
