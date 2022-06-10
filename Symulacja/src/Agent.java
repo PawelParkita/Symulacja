@@ -15,9 +15,15 @@ abstract class Agent {
     }
 
     public int[] mov() { //
+          /*
+            0 1 2
+            3   4
+            5 6 7
+             */
         Random rand = new Random();
         int next = rand.nextInt(8);
         int next_y = -1, next_x = -1;
+
 
         if (next == 0) {
             next_x = x - speed;

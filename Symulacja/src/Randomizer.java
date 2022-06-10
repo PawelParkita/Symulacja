@@ -17,6 +17,6 @@ public class Randomizer
 
     int random_speed(){
         Random rand=new Random();
-       return rand.nextInt(2)+1; //!!!!! speed zmieniony na 2 do tesów trzeba pamietać !!!!!!!
+       return rand.nextInt(1)+1;
     }
 }
