@@ -7,7 +7,7 @@ public class Simulation {
         Data data = new Data();
       //  tab=data.Data();
       //  Map map = new Map(tab[0], tab[1], tab[2], tab[3], tab[5], tab[4], tab[6]);
-        Map map = new Map(3, 3,0, 0, 1,1,50);
+        Map map = new Map(25, 25,4, 3, 20,20,70);
         map.map_initialization();
         map.map_population();
 

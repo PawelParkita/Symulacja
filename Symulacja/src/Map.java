@@ -126,11 +126,11 @@ public class Map {
 
 //        for (int i=0;i<width;i++) {
 //            for (int j=0;j<height;j++) {
-        Set< Integer > agenty = agents_copy.keySet();
-        for (Integer object: agenty)
+        Set< Integer > agentyss = agents_copy.keySet();
+        for (Integer objects: agentyss)
         {
-         int j= agents.get(object).x;
-         int i= agents.get(object).y;
+         int j= agents_copy.get(objects).x;
+         int i= agents_copy.get(objects).y;
          int z = (i * height) + j;
                if (agents_copy.containsKey(z)) {
                 //    System.out.println("tak " + z);
@@ -149,6 +149,8 @@ public class Map {
                     //System.out.println(next_y * height + next_x);
 
                     if (map[next_x][next_y] == ".") { // if cell is empty
+                        agents.get(z).x=next_x;
+                        agents.get(z).y=next_y;
                         agents.put((next_y * height + next_x), agents.get(z));
                         agents.remove(z);
                         agents.remove(z, agents.get(z));
@@ -166,8 +168,10 @@ public class Map {
                             loops_witout_action=0;
                             if (agents.get(next_y * height + next_x).power < agents.get(z).power) { //alien win
                                 agents.get(z).power++;
+                                agents.get(z).x=next_x;
+                                agents.get(z).y=next_y;
                                 agents.put(next_y * height + next_x, agents.get(z));
-                                agents_copy.remove(next_y * height + next_x);
+                             //   agents_copy.remove(next_y * height + next_x);
                                 agents.remove(z);
                                 agents.remove(z, agents.get(z));
                                 human_population--;
@@ -181,8 +185,10 @@ public class Map {
                                 map[j][i] = ".";
                             } else { // alien power = human power
                                 if (alien_population > human_population) {
+                                    agents.get(z).x=next_x;
+                                    agents.get(z).y=next_y;
                                     agents.put(next_y * height + next_x, agents.get(z));
-                                    agents_copy.remove(next_y * height + next_x);
+                            //        agents_copy.remove(next_y * height + next_x);
                                     agents.remove(z);
                                     agents.remove(z, agents.get(z));
                                     human_population--;
@@ -202,7 +208,7 @@ public class Map {
                         if (((agents.get(next_y * height + next_x).sex == 'W') && (agents.get(z).sex == 'M')) || ((agents.get(z).sex == 'W' && (agents.get(next_y * height + next_x).sex == 'M')))) { // humans other sex
                             Random rand = new Random();
                             Randomizer random = new Randomizer();
-                            if (rand.nextInt(100) < 30 && human_population<((width*height-4*(mountains+lakes))/2)) {
+                            if (rand.nextInt(100) < 10 && human_population<((width*height-4*(mountains+lakes))/2)) {
                                 loops_witout_action=0;
 
                                 int x, y;
@@ -228,6 +234,8 @@ public class Map {
                             } else if (agents.get(next_y * height + next_x).sex == 'A') { // human -> alien
                                 loops_witout_action=0;
                                 if (agents.get(next_y * height + next_x).power < agents.get(z).power) { //human win
+                                    agents.get(z).x=next_x;
+                                    agents.get(z).y=next_y;
                                     agents.put(next_y * height + next_x, agents.get(z));
                                     agents.remove(z);
                                     agents.remove(z, agents.get(z));
@@ -246,6 +254,8 @@ public class Map {
                                         human_population--;
                                         map[j][i] = ".";
                                     } else {
+                                        agents.get(z).x=next_x;
+                                        agents.get(z).y=next_y;
                                         agents.put(next_y * height + next_x, agents.get(z));
                                         agents.remove(z);
                                         agents.remove(z, agents.get(z));

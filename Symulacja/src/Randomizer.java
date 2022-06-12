@@ -17,6 +17,6 @@ public class Randomizer
 
     int random_speed(){
         Random rand=new Random();
-       return rand.nextInt(1)+1;
+       return rand.nextInt(2)+1;
     }
 }
