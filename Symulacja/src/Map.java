@@ -1,3 +1,6 @@
+import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.Random;
 
@@ -69,10 +72,10 @@ public class Map {
         }
     }
 
-   void map_population(){
+    void map_population(){
         Randomizer random = new Randomizer();
         //generate humans
-       int humans=human_population;
+        int humans=human_population;
         while(humans>0){
             Random rand=new Random();
             int x = rand.nextInt(width );
@@ -97,20 +100,20 @@ public class Map {
         }
 
         // generate aliens
-       int aliens=alien_population;
-       while(aliens>0){
-           Random rand=new Random();
-           int x = rand.nextInt(width );
-           int y = rand.nextInt(height );
+        int aliens=alien_population;
+        while(aliens>0){
+            Random rand=new Random();
+            int x = rand.nextInt(width );
+            int y = rand.nextInt(height );
 
-           if(map[x][y]==".") {
-               map[x][y]="A";
-               Alien alien = new Alien(x,y,random.random_power(),random.random_speed());
-               int z=(y*height)+x;
-               agents.put(z,alien);
-               aliens--;
-           }
-       }
+            if(map[x][y]==".") {
+                map[x][y]="A";
+                Alien alien = new Alien(x,y,random.random_power(),random.random_speed());
+                int z=(y*height)+x;
+                agents.put(z,alien);
+                aliens--;
+            }
+        }
     }
 
     void movement(){
@@ -129,111 +132,131 @@ public class Map {
         Set< Integer > agentyss = agents_copy.keySet();
         for (Integer objects: agentyss)
         {
-         int j= agents_copy.get(objects).x;
-         int i= agents_copy.get(objects).y;
-         int z = (i * height) + j;
-               if (agents_copy.containsKey(z)) {
+            int j= agents_copy.get(objects).x;
+            int i= agents_copy.get(objects).y;
+            int z = (i * height) + j;
+            if (agents_copy.containsKey(z)) {
                 //    System.out.println("tak " + z);
-                    int next_x, next_y;
-                    do {
-                        int next[] = human_exist(agents.get(z).x,agents.get(z).y,agents.get(z).speed);
-                        next_x=next[0];
-                        next_y=next[1];
+                int next_x, next_y;
+                do {
+                    int next[] = human_exist(agents.get(z).x,agents.get(z).y,agents.get(z).speed);
+                    next_x=next[0];
+                    next_y=next[1];
 
-                        if (next_x==-1) {
-                            int nexty[] = agents.get(z).mov();
-                            next_x = nexty[0];
-                            next_y = nexty[1];
-                        }
-                    } while (!does_exist(next_x, next_y));
-                    //System.out.println(next_y * height + next_x);
-
-                    if (map[next_x][next_y] == ".") { // if cell is empty
-                        agents.get(z).x=next_x;
-                        agents.get(z).y=next_y;
-                        agents.put((next_y * height + next_x), agents.get(z));
-                        agents.remove(z);
-                        agents.remove(z, agents.get(z));
-
-                        map[next_x][next_y] = map[j][i];
-                        map[j][i] = ".";
+                    if (next_x==-1) {
+                        int nexty[] = agents.get(z).mov();
+                        next_x = nexty[0];
+                        next_y = nexty[1];
                     }
-                    else if (map[next_x][next_y] == "o" || map[next_x][next_y] == "^" )
-                    {
-                        break;
-                    }
-                    else if (agents.get(z).sex == 'A') { // if alien exist
+                } while (!does_exist(next_x, next_y));
+                //System.out.println(next_y * height + next_x);
 
-                        if ((agents.get(next_y * height + next_x).sex == 'W') || (agents.get(next_y * height + next_x).sex == 'M')) { // when alien -> human
-                            loops_witout_action=0;
-                            if (agents.get(next_y * height + next_x).power < agents.get(z).power) { //alien win
-                                agents.get(z).power++;
+                if (map[next_x][next_y] == ".") { // if cell is empty
+                    agents.get(z).x=next_x;
+                    agents.get(z).y=next_y;
+                    agents.put((next_y * height + next_x), agents.get(z));
+                    agents.remove(z);
+                    agents.remove(z, agents.get(z));
+
+                    map[next_x][next_y] = map[j][i];
+                    map[j][i] = ".";
+                }
+                else if (map[next_x][next_y] == "o" || map[next_x][next_y] == "^" )
+                {
+                    break;
+                }
+                else if (agents.get(z).sex == 'A') { // if alien exist
+
+                    if ((agents.get(next_y * height + next_x).sex == 'W') || (agents.get(next_y * height + next_x).sex == 'M')) { // when alien -> human
+                        loops_witout_action=0;
+                        if (agents.get(next_y * height + next_x).power < agents.get(z).power) { //alien win
+                            agents.get(z).power++;
+                            agents.get(z).x=next_x;
+                            agents.get(z).y=next_y;
+                            agents.put(next_y * height + next_x, agents.get(z));
+                            //   agents_copy.remove(next_y * height + next_x);
+                            agents.remove(z);
+                            agents.remove(z, agents.get(z));
+                            human_population--;
+                            map[next_x][next_y] = map[j][i];
+                            map[j][i] = ".";
+                        } else if (agents.get(next_y * height + next_x).power > agents.get(z).power) //human win
+                        {
+                            agents.remove(z);
+                            agents.remove(z, agents.get(z));
+                            alien_population--;
+                            map[j][i] = ".";
+                        } else { // alien power = human power
+                            if (alien_population > human_population) {
                                 agents.get(z).x=next_x;
                                 agents.get(z).y=next_y;
                                 agents.put(next_y * height + next_x, agents.get(z));
-                             //   agents_copy.remove(next_y * height + next_x);
+                                //        agents_copy.remove(next_y * height + next_x);
                                 agents.remove(z);
                                 agents.remove(z, agents.get(z));
                                 human_population--;
                                 map[next_x][next_y] = map[j][i];
                                 map[j][i] = ".";
-                            } else if (agents.get(next_y * height + next_x).power > agents.get(z).power) //human win
-                            {
+                            } else {
                                 agents.remove(z);
                                 agents.remove(z, agents.get(z));
                                 alien_population--;
                                 map[j][i] = ".";
-                            } else { // alien power = human power
-                                if (alien_population > human_population) {
-                                    agents.get(z).x=next_x;
-                                    agents.get(z).y=next_y;
-                                    agents.put(next_y * height + next_x, agents.get(z));
-                            //        agents_copy.remove(next_y * height + next_x);
-                                    agents.remove(z);
-                                    agents.remove(z, agents.get(z));
-                                    human_population--;
-                                    map[next_x][next_y] = map[j][i];
-                                    map[j][i] = ".";
-                                } else {
-                                    agents.remove(z);
-                                    agents.remove(z, agents.get(z));
-                                    alien_population--;
-                                    map[j][i] = ".";
-                                }
                             }
                         }
                     }
-                    else if ((agents.get(z).sex == 'W') || (agents.get(z).sex == 'M')) { // if human exist
+                }
+                else if ((agents.get(z).sex == 'W') || (agents.get(z).sex == 'M')) { // if human exist
 
-                        if (((agents.get(next_y * height + next_x).sex == 'W') && (agents.get(z).sex == 'M')) || ((agents.get(z).sex == 'W' && (agents.get(next_y * height + next_x).sex == 'M')))) { // humans other sex
-                            Random rand = new Random();
-                            Randomizer random = new Randomizer();
-                            if (rand.nextInt(100) < 10 && human_population<((width*height-4*(mountains+lakes))/2)) {
-                                loops_witout_action=0;
+                    if (((agents.get(next_y * height + next_x).sex == 'W') && (agents.get(z).sex == 'M')) || ((agents.get(z).sex == 'W' && (agents.get(next_y * height + next_x).sex == 'M')))) { // humans other sex
+                        Random rand = new Random();
+                        Randomizer random = new Randomizer();
+                        if (rand.nextInt(100) < 10 && human_population<((width*height-4*(mountains+lakes))/2)) {
+                            loops_witout_action=0;
 
-                                int x, y;
-                                do {
-                                    x = rand.nextInt(width);
-                                    y = rand.nextInt(height);
-                                } while (!(map[x][y] == "."));
+                            int x, y;
+                            do {
+                                x = rand.nextInt(width);
+                                y = rand.nextInt(height);
+                            } while (!(map[x][y] == "."));
 
-                                if (rand.nextInt(100) < probability) {
+                            if (rand.nextInt(100) < probability) {
 
-                                    map[x][y] = "G";
-                                    Guardian guard = new Guardian(x, y, random.random_sex(), random.random_power());
-                                    int p = (y * height) + x;
-                                    agents.put(p, guard);
+                                map[x][y] = "G";
+                                Guardian guard = new Guardian(x, y, random.random_sex(), random.random_power());
+                                int p = (y * height) + x;
+                                agents.put(p, guard);
+                            } else {
+                                map[x][y] = "H";
+                                Human human = new Human(x, y, random.random_sex());
+                                int p = (y * height) + x;
+                                agents.put(p, human);
+
+                            }
+                            human_population++;
+                        } else if (agents.get(next_y * height + next_x).sex == 'A') { // human -> alien
+                            loops_witout_action=0;
+                            if (agents.get(next_y * height + next_x).power < agents.get(z).power) { //human win
+                                agents.get(z).x=next_x;
+                                agents.get(z).y=next_y;
+                                agents.put(next_y * height + next_x, agents.get(z));
+                                agents.remove(z);
+                                agents.remove(z, agents.get(z));
+                                alien_population--;
+                                map[next_x][next_y] = map[j][i];
+                                map[j][i] = ".";
+                            } else if (agents.get(next_y * height + next_x).power > agents.get(z).power) { //alien win
+                                agents.remove(z);
+                                agents.remove(z, agents.get(z));
+                                human_population--;
+                                map[j][i] = ".";
+                            } else {
+                                if (alien_population > human_population) {
+                                    agents.remove(z);
+                                    agents.remove(z, agents.get(z));
+                                    human_population--;
+                                    map[j][i] = ".";
                                 } else {
-                                    map[x][y] = "H";
-                                    Human human = new Human(x, y, random.random_sex());
-                                    int p = (y * height) + x;
-                                    agents.put(p, human);
-
-                                }
-                                human_population++;
-                            } else if (agents.get(next_y * height + next_x).sex == 'A') { // human -> alien
-                                loops_witout_action=0;
-                                if (agents.get(next_y * height + next_x).power < agents.get(z).power) { //human win
                                     agents.get(z).x=next_x;
                                     agents.get(z).y=next_y;
                                     agents.put(next_y * height + next_x, agents.get(z));
@@ -242,27 +265,6 @@ public class Map {
                                     alien_population--;
                                     map[next_x][next_y] = map[j][i];
                                     map[j][i] = ".";
-                                } else if (agents.get(next_y * height + next_x).power > agents.get(z).power) { //alien win
-                                    agents.remove(z);
-                                    agents.remove(z, agents.get(z));
-                                    human_population--;
-                                    map[j][i] = ".";
-                                } else {
-                                    if (alien_population > human_population) {
-                                        agents.remove(z);
-                                        agents.remove(z, agents.get(z));
-                                        human_population--;
-                                        map[j][i] = ".";
-                                    } else {
-                                        agents.get(z).x=next_x;
-                                        agents.get(z).y=next_y;
-                                        agents.put(next_y * height + next_x, agents.get(z));
-                                        agents.remove(z);
-                                        agents.remove(z, agents.get(z));
-                                        alien_population--;
-                                        map[next_x][next_y] = map[j][i];
-                                        map[j][i] = ".";
-                                    }
                                 }
                             }
                         }
@@ -270,6 +272,7 @@ public class Map {
                 }
             }
         }
+    }
     //}
 
     boolean does_exist(int x, int y){
@@ -312,7 +315,7 @@ public class Map {
             tab[1] = y + speed;
         }
 
-       else if (does_exist((x + speed),(y + speed)) && (map[(x + speed)][(y + speed)]=="H" || map[(x + speed)][(y + speed)]=="G")) {
+        else if (does_exist((x + speed),(y + speed)) && (map[(x + speed)][(y + speed)]=="H" || map[(x + speed)][(y + speed)]=="G")) {
             tab[0] = x + speed;
             tab[1] = y + speed;
         }
@@ -328,6 +331,22 @@ public class Map {
         System.out.println("A: "+alien_population);
         System.out.println("L: "+loops);
         System.out.println("Lo: "+loops_witout_action);
+
+        //save to file LOOPS HUMAN ALIEN
+        try {
+            RandomAccessFile file = new RandomAccessFile("sim3.txt", "rw");
+            String h=String.valueOf(human_population);
+            String a=String.valueOf(alien_population);
+            String l=String.valueOf(loops);
+            file.seek(file.length());
+            file.writeBytes(l+";");
+            file.writeBytes(h+";");
+            file.writeBytes(a);
+            file.writeBytes("\n");
+            file.close();
+        } catch (Exception e) {
+            System.out.println("Error writing to file");
+        }
         // Map printing
         for(int i=0; i<height; i++) {
             for (int j = 0; j < width; j++) {
