@@ -5,18 +5,18 @@ import java.util.*;
 import java.util.Random;
 
 public class Map {
-    String[][] map;
+    private String[][] map;
     int width;
     int height;
-    int mountains;
-    int lakes;
-    int probability;
-    int alien_population;
+    private int mountains;
+    private int lakes;
+    private int probability;
+    static int alien_population;
     static int human_population;
     int loops_witout_action;
-    int loops;
-    HashMap <Integer,Agent> agents = new HashMap<>();
-    HashMap <Integer,Agent> agents_copy = new HashMap<>();
+    private int loops;
+    private  HashMap <Integer,Agent> agents = new HashMap<>();
+    private HashMap <Integer,Agent> agents_copy = new HashMap<>();
 
     Map(int width, int height, int mountains, int lakes,int alien_population,int human_population, int probability){
         this.width=width;
@@ -126,19 +126,14 @@ public class Map {
             agents_copy.put(object,agents.get(object));
         }
 
-
-//        for (int i=0;i<width;i++) {
-//            for (int j=0;j<height;j++) {
         Set< Integer > agentyss = agents_copy.keySet();
         for (Integer objects: agentyss)
         {
             int j= agents_copy.get(objects).x;
             int i= agents_copy.get(objects).y;
             int z = (i * height) + j;
-            if (agents_copy.containsKey(z)) {
-                //    System.out.println("tak " + z);
                 int next_x, next_y;
-                do {
+                do { //new position
                     int next[] = human_exist(agents.get(z).x,agents.get(z).y,agents.get(z).speed);
                     next_x=next[0];
                     next_y=next[1];
@@ -149,7 +144,7 @@ public class Map {
                         next_y = nexty[1];
                     }
                 } while (!does_exist(next_x, next_y));
-                //System.out.println(next_y * height + next_x);
+
 
                 if (map[next_x][next_y] == ".") { // if cell is empty
                     agents.get(z).x=next_x;
@@ -174,7 +169,6 @@ public class Map {
                             agents.get(z).x=next_x;
                             agents.get(z).y=next_y;
                             agents.put(next_y * height + next_x, agents.get(z));
-                            //   agents_copy.remove(next_y * height + next_x);
                             agents.remove(z);
                             agents.remove(z, agents.get(z));
                             human_population--;
@@ -191,7 +185,7 @@ public class Map {
                                 agents.get(z).x=next_x;
                                 agents.get(z).y=next_y;
                                 agents.put(next_y * height + next_x, agents.get(z));
-                                //        agents_copy.remove(next_y * height + next_x);
+
                                 agents.remove(z);
                                 agents.remove(z, agents.get(z));
                                 human_population--;
@@ -270,10 +264,9 @@ public class Map {
                         }
                     }
                 }
-            }
+
         }
     }
-    //}
 
     boolean does_exist(int x, int y){
         if(x<0 || y<0) return false;
@@ -332,9 +325,20 @@ public class Map {
         System.out.println("L: "+loops);
         System.out.println("Lo: "+loops_witout_action);
 
+
+        // Map printing
+        for(int i=0; i<height; i++) {
+            for (int j = 0; j < width; j++) {
+                System.out.print(map[j][i]+" ");
+            }
+            System.out.println("");
+        }
+    }
+
+    void save_map(){
         //save to file LOOPS HUMAN ALIEN
         try {
-            RandomAccessFile file = new RandomAccessFile("sim3.txt", "rw");
+            RandomAccessFile file = new RandomAccessFile("sim5x5_50.txt", "rw");
             String h=String.valueOf(human_population);
             String a=String.valueOf(alien_population);
             String l=String.valueOf(loops);
@@ -346,13 +350,6 @@ public class Map {
             file.close();
         } catch (Exception e) {
             System.out.println("Error writing to file");
-        }
-        // Map printing
-        for(int i=0; i<height; i++) {
-            for (int j = 0; j < width; j++) {
-                System.out.print(map[j][i]+" ");
-            }
-            System.out.println("");
         }
     }
 }
