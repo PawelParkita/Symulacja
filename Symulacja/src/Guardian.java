@@ -1,3 +1,6 @@
+/**
+ *Klasa tworzy agenta: {@link Guardian#Guardian(int, int, char, int)} )}, dziedziczy po {@link Human}
+ */
 public class Guardian extends Human {
 
 

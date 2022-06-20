@@ -4,6 +4,9 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.Random;
 
+/**
+ * Klasa zawiera mape i pozwala na ruchy po niej
+ */
 public class Map {
     private String[][] map;
     int width;

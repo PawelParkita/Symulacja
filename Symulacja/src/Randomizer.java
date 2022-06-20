@@ -1,5 +1,8 @@
 import java.util.Random;
 
+/**
+ * Klasa losuje wartosci
+ */
 public class Randomizer
 {
     char random_sex(){

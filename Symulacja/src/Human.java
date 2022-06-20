@@ -1,3 +1,6 @@
+/**
+ *Klasa tworzy agenta: {@link Human#Human(int, int, char)}}, dziedziczy po {@link Agent}
+ */
 public class Human extends Agent{
 
 

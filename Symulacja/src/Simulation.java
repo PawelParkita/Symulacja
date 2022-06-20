@@ -1,5 +1,6 @@
-import java.util.Scanner;
-
+/**
+ * Klasa  pozwala kotrolowac symulacje
+ */
 public class Simulation {
 
     void start_simulation() throws InterruptedException {

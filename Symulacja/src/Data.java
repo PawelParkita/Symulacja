@@ -2,6 +2,9 @@ import java.security.spec.RSAOtherPrimeInfo;
 import java.sql.SQLOutput;
 import java.util.Scanner;
 
+/**
+ * Klasa pozwala wprowadzić parametry symulacji
+ */
 public class Data {
 
     int[] Data(){

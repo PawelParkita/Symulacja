@@ -1,5 +1,7 @@
 import java.util.Random;
-
+/**
+ * Jest to abstrakcyjna klasa nadrzedna dla {@link Human}, {@link Alien}
+ */
 abstract class Agent {
 
     int x, y;

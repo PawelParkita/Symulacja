@@ -1,5 +1,6 @@
-import javax.swing.*;
-
+/**
+ * Klasa startowa
+ */
 public class Main {
 
 
